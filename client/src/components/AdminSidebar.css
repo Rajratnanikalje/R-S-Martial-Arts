@@ -1,0 +1,140 @@
+.admin-sidebar-content {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(20, 20, 30, 0.85), rgba(30, 15, 40, 0.88));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 14px;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+  min-height: 100%;
+}
+
+/* Shine sweep on sidebar */
+.admin-sidebar-content::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 120%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.6s ease;
+  pointer-events: none;
+}
+
+.admin-sidebar-content:hover::after {
+  left: 150%;
+}
+
+.admin-sidebar-content h2 {
+  color: #ffffff;
+  font-size: 17px;
+  margin-top: 0;
+  margin-bottom: 16px;
+  text-align: center;
+  letter-spacing: 1px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  padding-bottom: 10px;
+  text-shadow: 0 0 18px rgba(230, 57, 70, 0.6);
+  line-height: 1.3;
+}
+
+.admin-sidebar-content ul {
+  list-style: none;
+  padding: 0 0 10px 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  margin-right: -8px; /* tuck scrollbar so items don't clip */
+  padding-right: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.admin-sidebar-content ul::-webkit-scrollbar {
+  width: 6px;
+}
+.admin-sidebar-content ul::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+.admin-sidebar-content ul::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-sidebar-content .sidebar-divider {
+  margin-top: 6px;
+  padding: 6px 12px 2px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  user-select: none;
+}
+
+.admin-sidebar-content ul li a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #d0d0e0;
+  text-decoration: none;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  border: 1px solid transparent;
+  transition: all 0.25s ease-in-out;
+}
+
+.admin-sidebar-content ul li a:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  transform: translateX(4px);
+  box-shadow: 0 0 18px rgba(59, 130, 246, 0.25);
+}
+
+.admin-sidebar-content ul li a.active {
+  background: linear-gradient(135deg, rgba(230, 57, 70, 0.85), rgba(214, 40, 40, 0.7));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  box-shadow: 0 0 22px rgba(230, 57, 70, 0.45);
+}
+
+.admin-sidebar-content .logout-btn {
+  width: 100%;
+  margin-top: auto;
+  background: linear-gradient(135deg, #ff5722, #e64a19);
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  transition: all 0.25s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 18px rgba(255, 87, 34, 0.35);
+}
+
+.admin-sidebar-content .logout-btn:hover {
+  background: linear-gradient(135deg, #e64a19, #c83a10);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(255, 87, 34, 0.55);
+}

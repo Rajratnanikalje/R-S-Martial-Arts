@@ -1,0 +1,256 @@
+/* ==============================================
+   ABOUT SECTION MAIN STYLES
+   ============================================== */
+.about {
+  width: 100%;
+  padding: 100px 20px 80px 20px; /* Top padding Navbar ke space ke liye hai */
+  background: linear-gradient(180deg, #0d0d0d, #101010);
+  color: #ffffff;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.about::before {
+  content: "";
+  position: absolute;
+  top: 20%;
+  left: -15%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(230, 57, 70, 0.08), transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+}
+
+.about-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 50px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ==============================================
+   LEFT SIDE: IMAGE SECTION
+   ============================================== */
+.about-image {
+  flex: 1;
+  width: 100%;
+}
+
+.image-box {
+  position: relative;
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.7), 0 0 40px rgba(230, 57, 70, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(4px);
+}
+
+.about-main-img {
+  width: 100%;
+  height: 100%;
+  max-height: 500px;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease, filter 0.5s ease;
+}
+
+.image-box:hover .about-main-img {
+  transform: scale(1.04); /* Smooth hover zoom */
+  filter: saturate(1.15);
+}
+
+/* Experience Badge Overlay */
+.experience-badge {
+  position: absolute;
+  bottom: 25px;
+  right: 25px;
+  background: linear-gradient(135deg, #e63946, #ff5b6e);
+  color: #ffffff;
+  padding: 18px 25px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 8px 25px rgba(230, 57, 70, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.experience-badge::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transform: skewX(-20deg);
+  animation: badgeShine 4s ease infinite;
+}
+
+@keyframes badgeShine {
+  0%, 80% { left: -120%; }
+  90% { left: 130%; }
+  100% { left: 130%; }
+}
+
+.experience-badge h4 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.experience-badge p {
+  margin: 5px 0 0 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ==============================================
+   RIGHT SIDE: CONTENT SECTION
+   ============================================== */
+.about-content {
+  flex: 1.1;
+  width: 100%;
+}
+
+.section-tag {
+  color: #e63946;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+  text-shadow: 0 0 12px rgba(230, 57, 70, 0.5);
+}
+
+.about-content h2 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1.3;
+  margin-bottom: 20px;
+  color: #ffffff;
+}
+
+.about-content p {
+  color: #cccccc;
+  font-size: 1rem;
+  line-height: 1.7;
+  margin-bottom: 15px;
+}
+
+.about-content p strong {
+  color: #ffffff;
+}
+
+/* Feature Highlights List */
+.about-features {
+  list-style: none;
+  padding: 0;
+  margin: 25px 0 35px 0;
+}
+
+.about-features li {
+  font-size: 1.05rem;
+  color: #ffffff;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+}
+
+/* Stats Section */
+.about-stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  padding-top: 25px;
+}
+
+.stat-item {
+  text-align: center;
+  flex: 1;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  padding: 18px 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.stat-item:hover {
+  transform: translateY(-4px);
+  border-color: rgba(230, 57, 70, 0.4);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 0 20px rgba(230, 57, 70, 0.1);
+}
+
+.stat-item h3 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #e63946;
+  margin: 0 0 5px 0;
+  text-shadow: 0 0 14px rgba(230, 57, 70, 0.5);
+}
+
+.stat-item span {
+  color: #aaaaaa;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* ==============================================
+   RESPONSIVE DESIGN (MOBILE & TABLET)
+   ============================================== */
+@media (max-width: 992px) {
+  .about-container {
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .about-content h2 {
+    font-size: 2rem;
+  }
+
+  .about-main-img {
+    max-height: 400px;
+  }
+}
+
+@media (max-width: 576px) {
+  .about {
+    padding: 90px 15px 50px 15px;
+  }
+
+  .about-content h2 {
+    font-size: 1.6rem;
+  }
+
+  .experience-badge {
+    padding: 12px 18px;
+    bottom: 15px;
+    right: 15px;
+  }
+
+  .experience-badge h4 {
+    font-size: 1.5rem;
+  }
+
+  .experience-badge p {
+    font-size: 0.75rem;
+  }
+
+  .about-stats {
+    flex-direction: column;
+    gap: 20px;
+  }
+}

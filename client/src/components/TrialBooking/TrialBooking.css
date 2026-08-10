@@ -1,0 +1,220 @@
+.trial-booking {
+  padding: 90px 8%;
+  background: linear-gradient(135deg, #0d0d0d, #161616, #1a0508, #0d0d0d);
+  background-size: 300% 300%;
+  animation: trialBgShift 14s ease infinite;
+  position: relative;
+  overflow: hidden;
+  scroll-margin-top: 90px;
+}
+
+@keyframes trialBgShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Soft red glow */
+.trial-booking::before {
+  content: "";
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(230, 57, 70, 0.12), transparent 70%);
+  filter: blur(50px);
+  pointer-events: none;
+}
+
+.trial-container {
+  max-width: 1100px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 50px;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.trial-content h2 {
+  font-size: 40px;
+  margin-bottom: 20px;
+  color: #ffffff;
+  text-shadow: 0 0 30px rgba(255, 255, 255, 0.08);
+}
+
+.trial-content p {
+  color: #94a3b8;
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+
+.trial-content ul {
+  list-style: none;
+  padding: 0;
+}
+
+.trial-content ul li {
+  margin-bottom: 12px;
+  font-size: 17px;
+  color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.trial-form {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 38px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Shine sweep on form */
+.trial-form::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 80%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.8s ease;
+  pointer-events: none;
+}
+
+.trial-form:hover::after {
+  left: 150%;
+}
+
+.trial-form form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.trial-form input,
+.trial-form select,
+.trial-form textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  outline: none;
+  font-size: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+  box-sizing: border-box;
+}
+
+.trial-form input::placeholder,
+.trial-form textarea::placeholder {
+  color: #94a3b8;
+}
+
+.trial-form input:focus,
+.trial-form select:focus,
+.trial-form textarea:focus {
+  border-color: rgba(230, 57, 70, 0.6);
+  background: rgba(255, 255, 255, 0.09);
+  box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.15);
+}
+
+.trial-form select {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #94a3b8 50%),
+    linear-gradient(135deg, #94a3b8 50%, transparent 50%);
+  background-position: calc(100% - 20px) 50%, calc(100% - 15px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.trial-form select option {
+  background: #1a1a1a;
+  color: #fff;
+}
+
+.trial-form textarea {
+  resize: none;
+}
+
+.trial-form button {
+  padding: 16px;
+  background: linear-gradient(135deg, #e63946 0%, #ff5b6e 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 17px;
+  font-weight: 600;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(230, 57, 70, 0.4);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.trial-form button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.6s ease;
+}
+
+.trial-form button:hover {
+  background: linear-gradient(135deg, #c1121f 0%, #ff4d5e 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(230, 57, 70, 0.55);
+}
+
+.trial-form button:hover::after {
+  left: 130%;
+}
+
+@media (max-width: 768px) {
+  .trial-booking {
+    padding: 70px 6% 40px;
+  }
+
+  .trial-container {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .trial-form {
+    order: -1;
+    padding: 24px;
+  }
+
+  .trial-content {
+    order: 1;
+  }
+
+  .trial-content h2 {
+    font-size: 30px;
+    margin-bottom: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trial-booking,
+  .trial-form::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

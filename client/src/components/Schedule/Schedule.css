@@ -1,0 +1,171 @@
+.schedule {
+  padding: 100px 20px;
+  background: linear-gradient(135deg, #0f172a, #1a0a0d, #0f172a);
+  background-size: 300% 300%;
+  animation: scheduleBgShift 15s ease infinite;
+  color: #ffffff;
+}
+
+@keyframes scheduleBgShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.schedule-container {
+  max-width: 1000px;
+  margin: auto;
+  text-align: center;
+}
+
+.section-tag {
+  color: #e63946;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-size: 14px;
+  text-shadow: 0 0 12px rgba(230, 57, 70, 0.5);
+}
+
+.schedule-container h2 {
+  font-size: 42px;
+  font-weight: 800;
+  margin: 10px 0 50px;
+  color: #ffffff;
+}
+
+/* Desktop Table Styling */
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(30, 41, 59, 0.75);
+  text-align: left;
+}
+
+th {
+  background: linear-gradient(135deg, #e63946, #ff5b6e);
+  padding: 20px;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+td {
+  padding: 20px;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.8);
+  color: #e2e8f0;
+}
+
+.day-name {
+  font-weight: 700;
+  font-size: 18px;
+  color: #ffffff;
+}
+
+.time-badge {
+  display: inline-block;
+  font-size: 12px;
+  background: rgba(230, 57, 70, 0.2);
+  color: #ff6b6b;
+  padding: 4px 8px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(230, 57, 70, 0.15);
+}
+
+.class-name {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+tr:hover {
+  background: rgba(51, 65, 85, 0.6);
+  transition: background 0.3s ease;
+}
+
+/* Sunday Notice */
+.sunday-notice {
+  margin-top: 30px;
+  padding: 15px;
+  background: rgba(30, 41, 59, 0.5);
+  backdrop-filter: blur(8px);
+  border-radius: 10px;
+  border: 1px dashed #e63946;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+/* Utility visibility classes */
+.mobile-only {
+  display: none;
+}
+
+/* Responsive Mobile Cards View */
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none;
+  }
+
+  .mobile-only {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .schedule-card {
+    background: rgba(30, 41, 59, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: left;
+    border-left: 4px solid #e63946;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  }
+
+  .card-day {
+    font-size: 20px;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 15px;
+  }
+
+  .card-session {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .session-title {
+    font-size: 13px;
+    color: #e63946;
+    font-weight: 700;
+  }
+
+  .session-time {
+    font-size: 12px;
+    color: #94a3b8;
+  }
+
+  .session-class {
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
+  }
+
+  .card-divider {
+    height: 1px;
+    background: #334155;
+    margin: 12px 0;
+  }
+}
