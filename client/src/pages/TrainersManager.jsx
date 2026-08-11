@@ -137,6 +137,25 @@ function TrainersManager() {
     }
   };
 
+  const moveTrainer = async (index, direction) => {
+    const target = index + direction;
+    if (target < 0 || target >= trainers.length) return;
+
+    const reordered = [...trainers];
+    const [trainer] = reordered.splice(index, 1);
+    reordered.splice(target, 0, trainer);
+
+    try {
+      // Save every position so existing trainers without an order value are normalized too.
+      await Promise.all(
+        reordered.map((item, order) => api.put(`/trainers/${item._id}`, { order }, authHeaders))
+      );
+      setTrainers(reordered.map((item, order) => ({ ...item, order })));
+    } catch (error) {
+      showMessage("error", "Failed to reorder trainers.");
+    }
+  };
+
   return (
 <div className="trainers-manager">
       {message.text && <div className={`tr-alert-box ${message.type}`}>{message.text}</div>}
@@ -192,8 +211,10 @@ function TrainersManager() {
           <p>No trainers yet. Add your first trainer above.</p>
         </div>
       ) : (
-        <div className="tr-grid">
-          {trainers.map((t) => (
+        <>
+          <p className="tr-reorder-hint">Use the arrow buttons to reorder trainers.</p>
+          <div className="tr-grid">
+          {trainers.map((t, index) => (
             <div className="tr-card" key={t._id}>
               <div className="tr-photo">
                 {t.photo ? (
@@ -208,12 +229,17 @@ function TrainersManager() {
                 {t.experience && <span>{t.experience}</span>}
               </div>
               <div className="tr-actions">
+                <button className="tr-btn reorder" onClick={() => moveTrainer(index, -1)} disabled={index === 0} title="Move left" aria-label={`Move ${t.name} left`}>⬅️</button>
+                <button className="tr-btn reorder" onClick={() => moveTrainer(index, -1)} disabled={index === 0} title="Move up" aria-label={`Move ${t.name} up`}>⬆️</button>
+                <button className="tr-btn reorder" onClick={() => moveTrainer(index, 1)} disabled={index === trainers.length - 1} title="Move down" aria-label={`Move ${t.name} down`}>⬇️</button>
+                <button className="tr-btn reorder" onClick={() => moveTrainer(index, 1)} disabled={index === trainers.length - 1} title="Move right" aria-label={`Move ${t.name} right`}>➡️</button>
                 <button className="tr-btn edit" onClick={() => openEdit(t)}>✏️ Edit</button>
                 <button className="tr-btn del" onClick={() => handleDelete(t)}>🗑️ Delete</button>
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        </>
       )}
 
       {/* Edit Modal */}

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import "./Hero.css";
 
@@ -10,17 +11,33 @@ const DEFAULT_HERO = {
   title: "Train Your Body.\nMaster Your Mind.",
   subtitle: "Learn martial arts, improve fitness and build confidence with professional trainers.",
   button1Text: "Book Free Trial",
-  button1Link: "#trial",
+  button1Link: "/trial",
   button2Text: "View Programs",
-  button2Link: "#programs",
+  button2Link: "/programs",
 };
 
 function Hero() {
+  const navigate = useNavigate();
   const [lightbox, setLightbox] = useState(false);
   const [hero, setHero] = useState(DEFAULT_HERO);
 
   const openLightbox = () => setLightbox(true);
   const closeLightbox = () => setLightbox(false);
+
+  const openButtonLink = (link, directRoute) => {
+    const destination = link?.trim();
+
+    // Existing CMS values used #trial/#programs; keep them working as direct pages.
+    if (!destination || destination === `#${directRoute.slice(1)}`) {
+      navigate(directRoute);
+    } else if (destination.startsWith("#")) {
+      document.getElementById(destination.slice(1))?.scrollIntoView({ behavior: "smooth" });
+    } else if (/^https?:\/\//.test(destination)) {
+      window.location.href = destination;
+    } else {
+      navigate(destination);
+    }
+  };
 
   // Fetch dynamic hero content from CMS (falls back to defaults)
   useEffect(() => {
@@ -73,22 +90,14 @@ function Hero() {
           <div className="hero-buttons">
             <button
               className="primary-btn shiny-btn"
-              onClick={() =>
-                hero.button1Link?.startsWith("#")
-                  ? document.getElementById(hero.button1Link.slice(1))?.scrollIntoView({ behavior: "smooth" })
-                  : (window.location.href = hero.button1Link)
-              }
+              onClick={() => openButtonLink(hero.button1Link, "/trial")}
             >
               {hero.button1Text}
             </button>
 
             <button
               className="secondary-btn"
-              onClick={() =>
-                hero.button2Link?.startsWith("#")
-                  ? document.getElementById(hero.button2Link.slice(1))?.scrollIntoView({ behavior: "smooth" })
-                  : (window.location.href = hero.button2Link)
-              }
+              onClick={() => openButtonLink(hero.button2Link, "/programs")}
             >
               {hero.button2Text}
             </button>

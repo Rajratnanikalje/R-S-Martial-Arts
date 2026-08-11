@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import ResetPassword from "./pages/ResetPassword";
 import Navbar from "./components/Navbar/Navbar";
@@ -38,6 +39,29 @@ function App() {
 
   // Check karein ki current page Admin ka toh nahi hai
   const isAdminRoute = location.pathname.startsWith("/admin") || location.pathname === "/login";
+  const contentVersion = useRef(localStorage.getItem("rs-content-updated"));
+
+  useEffect(() => {
+    if (isAdminRoute) return undefined;
+
+    const refreshPublicSite = (version) => {
+      if (!version || version === contentVersion.current) return;
+      contentVersion.current = version;
+      window.location.reload();
+    };
+
+    const handleStorage = (event) => {
+      if (event.key === "rs-content-updated") refreshPublicSite(event.newValue);
+    };
+    const handleFocus = () => refreshPublicSite(localStorage.getItem("rs-content-updated"));
+
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("focus", handleFocus);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [isAdminRoute]);
 
   return (
     <>

@@ -129,6 +129,12 @@
   gap: 20px;
 }
 
+.tr-reorder-hint {
+  margin: 0 0 14px;
+  color: #6b7280;
+  font-size: 13px;
+}
+
 .tr-card {
   background: rgba(255, 255, 255, 0.55);
   backdrop-filter: blur(12px);
@@ -191,6 +197,7 @@
 
 .tr-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   padding: 0 16px 16px 16px;
 }
@@ -217,6 +224,17 @@
 .tr-btn.del {
   background: #ef4444;
   color: #fff;
+}
+
+.tr-btn.reorder {
+  padding: 8px 10px;
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.tr-btn.reorder:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
 }
 
 .tr-btn.cancel {

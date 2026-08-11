@@ -13,7 +13,7 @@ const publicUrl = (filename) => `/uploads/trainers/${filename}`;
 // 1. GET all trainers (public + admin)
 export const getTrainers = async (_req, res) => {
   try {
-    const trainers = await Trainer.find().sort({ createdAt: -1 });
+    const trainers = await Trainer.find().sort({ order: 1, createdAt: -1 });
     res.json({ trainers });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -33,12 +33,14 @@ export const createTrainer = async (req, res) => {
     }
 
     const photo = req.file ? req.file.filename : "";
+    const order = await Trainer.countDocuments();
 
     const trainer = await Trainer.create({
       name: name.trim(),
       role: (role || "").trim(),
       experience: (experience || "").trim(),
       photo,
+      order,
     });
 
     res.status(201).json({
@@ -57,7 +59,7 @@ export const createTrainer = async (req, res) => {
 export const updateTrainer = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, role, experience } = req.body;
+    const { name, role, experience, order } = req.body;
 
     const trainer = await Trainer.findById(id);
     if (!trainer) {
@@ -68,6 +70,7 @@ export const updateTrainer = async (req, res) => {
     if (name && name.trim()) trainer.name = name.trim();
     if (role !== undefined) trainer.role = role.trim();
     if (experience !== undefined) trainer.experience = experience.trim();
+    if (order !== undefined && Number.isFinite(Number(order))) trainer.order = Number(order);
 
     // If a new photo is uploaded, replace old one
     if (req.file) {
