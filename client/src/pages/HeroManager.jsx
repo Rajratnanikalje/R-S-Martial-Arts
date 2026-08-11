@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import ConfirmImageRemoval from "../components/ConfirmImageRemoval.jsx";
 import "./ContentManagers.css";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
@@ -17,6 +18,7 @@ function HeroManager() {
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [files, setFiles] = useState([]);
+  const [imageToRemove, setImageToRemove] = useState("");
   const fileRef = useRef(null);
 
   useEffect(() => {
@@ -85,9 +87,9 @@ function HeroManager() {
   };
 
   const handleDeleteImage = async (filename) => {
-    if (!window.confirm(`Delete image "${filename}"?`)) return;
     try {
       await api.delete(`/hero-content/images/${encodeURIComponent(filename)}`, authHeaders);
+      setImageToRemove("");
       showMsg("success", "Image deleted.");
       fetchContent();
     } catch (err) {
@@ -105,12 +107,12 @@ function HeroManager() {
 
       {/* Images */}
       <div className="cm-card">
-        <h3>🖼️ Hero Images</h3>
-        <p className="cm-hint">Upload one or more hero images. Click an image to delete it.</p>
+        <h3>🖼️ Current Hero Image</h3>
+        <p className="cm-hint">Change the active hero image or remove it to use the existing static fallback.</p>
         <form onSubmit={handleUpload} style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
-          <input ref={fileRef} type="file" accept="image/*" multiple onChange={(e) => setFiles(Array.from(e.target.files))} className="cm-file-input" style={{ flex: 1, minWidth: 220, padding: 10, border: "1px dashed #bbb", borderRadius: 8, background: "#fafbfc" }} />
+          <input ref={fileRef} type="file" accept="image/*" onChange={(e) => setFiles(e.target.files[0] ? [e.target.files[0]] : [])} className="cm-file-input" style={{ flex: 1, minWidth: 220, padding: 10, border: "1px dashed #bbb", borderRadius: 8, background: "#fafbfc" }} />
           <button type="submit" className="cm-btn cm-btn-primary" disabled={uploading}>
-            {uploading ? "Uploading..." : "🚀 Upload Image(s)"}
+            {uploading ? "Uploading..." : (content.images || []).length ? "Change Image" : "Upload Image"}
           </button>
         </form>
         <div className="cm-image-row">
@@ -118,11 +120,13 @@ function HeroManager() {
           {(content.images || []).map((img) => (
             <div className="cm-image-box" key={img}>
               <img src={`${UPLOADS_BASE}/uploads/hero/${img}`} alt={img} />
-              <button className="cm-remove-img" onClick={() => handleDeleteImage(img)} title="Delete">✕</button>
+              <button className="cm-remove-img" onClick={() => setImageToRemove(img)} title="Remove image">✕</button>
             </div>
           ))}
         </div>
       </div>
+
+      <ConfirmImageRemoval open={Boolean(imageToRemove)} onCancel={() => setImageToRemove("")} onConfirm={() => handleDeleteImage(imageToRemove)} />
 
 {/* Enable / Disable */}
       <div className="cm-card">

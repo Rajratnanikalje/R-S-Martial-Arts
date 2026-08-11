@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import ConfirmImageRemoval from "../components/ConfirmImageRemoval.jsx";
 import "./ContentManagers.css";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
@@ -18,6 +19,7 @@ function LogoManager() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [confirmRemove, setConfirmRemove] = useState(false);
   const fileRef = useRef(null);
 
   useEffect(() => {
@@ -54,6 +56,7 @@ function LogoManager() {
       return;
     }
     setUploading(true);
+    let uploadedFilename = "";
     try {
       const fd = new FormData();
       fd.append("images", logoFile);
@@ -64,13 +67,16 @@ function LogoManager() {
 
       const uploaded = res.data.images && res.data.images[0];
       const filename = uploaded ? uploaded.name : null;
+      uploadedFilename = filename || "";
 
       // Persist the chosen logo filename + academy name using the existing
       // site-settings collection (extended, no new model created).
-      if (filename && academyName.trim()) {
+      if (filename) {
+        const payload = { logo: filename };
+        if (academyName.trim()) payload.academyName = academyName.trim();
         const sRes = await api.put(
           "/admin/site-settings",
-          { logo: filename, academyName: academyName.trim() },
+          payload,
           authHeaders
         );
         const s = sRes.data.settings || {};
@@ -81,7 +87,24 @@ function LogoManager() {
       setLogoFile(null);
       if (fileRef.current) fileRef.current.value = "";
     } catch (err) {
+      if (uploadedFilename) {
+        await api.delete(`/images/logo/${encodeURIComponent(uploadedFilename)}`, authHeaders).catch(() => {});
+      }
       showMsg("error", err.response?.data?.message || "Logo upload failed.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveLogo = async () => {
+    setUploading(true);
+    try {
+      await api.put("/admin/site-settings", { logo: "" }, authHeaders);
+      setLogoUrl("");
+      setConfirmRemove(false);
+      showMsg("success", "Logo removed successfully!");
+    } catch (err) {
+      showMsg("error", err.response?.data?.message || "Failed to remove logo.");
     } finally {
       setUploading(false);
     }
@@ -114,7 +137,7 @@ function LogoManager() {
       {/* Logo image */}
       <div className="cm-card">
         <h3>🖼️ Logo Image</h3>
-        <p className="cm-hint">Upload the logo used in the Navbar and Footer. Click save to apply immediately.</p>
+        <p className="cm-hint">Current logo used in the Navbar and Footer.</p>
 
         <div style={{ display: "flex", gap: "20px", alignItems: "center", flexWrap: "wrap" }}>
           <div
@@ -144,8 +167,9 @@ function LogoManager() {
                 style={{ flex: 1, minWidth: 180, padding: 10, border: "1px dashed #bbb", borderRadius: 8, background: "#fafbfc" }}
               />
               <button type="submit" className="cm-btn cm-btn-primary" disabled={uploading}>
-                {uploading ? "Uploading..." : "🚀 Upload Logo"}
+                {uploading ? "Uploading..." : logoUrl ? "Change Logo" : "Upload Logo"}
               </button>
+              {logoUrl && <button type="button" className="cm-btn cm-btn-danger-ghost" onClick={() => setConfirmRemove(true)} disabled={uploading}>Remove Logo</button>}
             </div>
             {logoFile && <p style={{ color: "#111", fontSize: 13, marginTop: 8 }}>📎 Selected: {logoFile.name}</p>}
           </form>
@@ -172,6 +196,13 @@ function LogoManager() {
           </div>
         </div>
       </form>
+
+      <ConfirmImageRemoval
+        open={confirmRemove}
+        onCancel={() => setConfirmRemove(false)}
+        onConfirm={handleRemoveLogo}
+        busy={uploading}
+      />
     </div>
   );
 }

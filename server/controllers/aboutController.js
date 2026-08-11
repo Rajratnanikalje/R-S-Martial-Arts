@@ -1,5 +1,5 @@
 import AboutContent from "../models/AboutContent.js";
-import { deleteFile } from "../config/contentUpload.js";
+import { deleteUploadedFile } from "../config/contentUpload.js";
 import { logActivity } from "../utils/logActivity.js";
 
 const DEFAULT_FEATURES = [
@@ -13,6 +13,49 @@ const DEFAULT_STATS = [
   { value: "13+", label: "Programs Offered" },
 ];
 
+// Supports the JSON FormData payload and legacy records where an array was
+// accidentally stored as one or more JSON strings.
+const normalizeFeatures = (value) => {
+  const features = [];
+
+  const add = (item, splitPlainText = true) => {
+    if (Array.isArray(item)) {
+      item.forEach((feature) => add(feature, false));
+      return;
+    }
+    if (typeof item !== "string") return;
+
+    const text = item.trim();
+    if (!text) return;
+
+    try {
+      const parsed = JSON.parse(text);
+      if (Array.isArray(parsed)) {
+        parsed.forEach((feature) => add(feature, false));
+        return;
+      }
+      if (typeof parsed === "string" && parsed !== text) {
+        add(parsed, splitPlainText);
+        return;
+      }
+    } catch {
+      // Normal feature text is not JSON.
+    }
+
+    const values = splitPlainText ? text.split(/[\n,]/) : [text];
+    values.forEach((feature) => {
+      const cleanFeature = feature.trim();
+      if (cleanFeature) features.push(cleanFeature);
+    });
+  };
+
+  add(value);
+  return features;
+};
+
+const featuresChanged = (current, normalized) =>
+  JSON.stringify(current) !== JSON.stringify(normalized);
+
 // GET about content (public)
 export const getAboutContent = async (_req, res) => {
   try {
@@ -22,6 +65,12 @@ export const getAboutContent = async (_req, res) => {
         features: DEFAULT_FEATURES,
         stats: DEFAULT_STATS,
       });
+    } else {
+      const normalizedFeatures = normalizeFeatures(content.features);
+      if (featuresChanged(content.features, normalizedFeatures)) {
+        content.features = normalizedFeatures;
+        await content.save();
+      }
     }
     res.json({ content });
   } catch (error) {
@@ -49,12 +98,10 @@ const textFields = [
       if (typeof req.body[f] === "string") content[f] = req.body[f].trim();
     });
 
-    // features: comma/newline separated string OR array
-    if (typeof req.body.features === "string") {
-      content.features = req.body.features
-        .split(/[\n,]/)
-        .map((s) => s.trim())
-        .filter(Boolean);
+    // Features are sent as a JSON array in FormData. This also repairs old
+    // stringified values, preventing double-stringification on later saves.
+    if (req.body.features !== undefined) {
+      content.features = normalizeFeatures(req.body.features);
     }
 
     // stats: JSON string OR array
@@ -67,20 +114,30 @@ const textFields = [
       }
     }
 
+    // Explicit image removal clears the existing CMS reference. Static fallback
+    // files are intentionally retained; generated CMS uploads are cleaned up.
+    const imageRemoved = String(req.body.removeImage) === "true";
+    if (imageRemoved) {
+      const old = content.image;
+      content.image = "";
+      if (old) deleteUploadedFile("about", old);
+    }
+
     // Optional photo replace
     if (req.file) {
       const old = content.image;
       content.image = req.file.filename;
-      if (old) deleteFile("about", old);
+      if (old) deleteUploadedFile("about", old);
     }
 
-await content.save();
+    await content.save();
     logActivity({
       actor: req.user?.name || "admin",
       actorRole: req.user?.role || "admin",
-      action: "About content updated",
+      action: req.file ? "About image updated" : imageRemoved ? "About image removed" : "About content updated",
       category: "cms",
       entity: "AboutContent",
+      detail: req.file ? "About image was changed." : imageRemoved ? "About image was removed." : "",
     });
     res.json({ message: "About content updated successfully.", content });
   } catch (error) {

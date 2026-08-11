@@ -1,5 +1,5 @@
 import HeroContent from "../models/HeroContent.js";
-import { deleteFiles } from "../config/contentUpload.js";
+import { deleteUploadedFiles } from "../config/contentUpload.js";
 import { logActivity } from "../utils/logActivity.js";
 
 // GET hero content (public)
@@ -61,9 +61,21 @@ export const uploadHeroImages = async (req, res) => {
     let content = await HeroContent.findOne();
     if (!content) content = new HeroContent();
 
+    const oldImages = content.images || [];
     const names = files.map((f) => f.filename);
-    content.images = [...(content.images || []), ...names];
+    // The public Hero has one active image. Replacing it also cleans up the
+    // previous CMS uploads instead of accumulating stale files.
+    content.images = names;
     await content.save();
+    deleteUploadedFiles("hero", oldImages);
+    logActivity({
+      actor: req.user?.name || "admin",
+      actorRole: req.user?.role || "admin",
+      action: "Hero image updated",
+      category: "cms",
+      entity: "HeroContent",
+      detail: "Hero image was changed.",
+    });
 
     res.status(201).json({ message: "Hero images uploaded.", content });
   } catch (error) {
@@ -84,7 +96,15 @@ export const deleteHeroImage = async (req, res) => {
     content.images = (content.images || []).filter((i) => i !== filename);
     await content.save();
 
-    deleteFiles("hero", [filename]);
+    deleteUploadedFiles("hero", [filename]);
+    logActivity({
+      actor: req.user?.name || "admin",
+      actorRole: req.user?.role || "admin",
+      action: "Hero image removed",
+      category: "cms",
+      entity: "HeroContent",
+      detail: "Hero image was removed.",
+    });
     res.json({ message: "Hero image deleted.", content });
   } catch (error) {
     res.status(500).json({ message: error.message });

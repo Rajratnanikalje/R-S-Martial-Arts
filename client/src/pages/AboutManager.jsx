@@ -1,10 +1,38 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import ConfirmImageRemoval from "../components/ConfirmImageRemoval.jsx";
 import "./ContentManagers.css";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const UPLOADS_BASE = API_BASE.replace(/\/api$/, "");
+
+const normalizeFeatures = (value) => {
+  const features = [];
+  const add = (item, splitPlainText = true) => {
+    if (Array.isArray(item)) return item.forEach((feature) => add(feature, false));
+    if (typeof item !== "string") return;
+
+    const text = item.trim();
+    if (!text) return;
+
+    try {
+      const parsed = JSON.parse(text);
+      if (Array.isArray(parsed)) return parsed.forEach((feature) => add(feature, false));
+      if (typeof parsed === "string" && parsed !== text) return add(parsed, splitPlainText);
+    } catch {
+      // Plain feature text is expected here.
+    }
+
+    const values = splitPlainText ? text.split(/[\n,]/) : [text];
+    values.forEach((feature) => {
+      if (feature.trim()) features.push(feature.trim());
+    });
+  };
+
+  add(value);
+  return features;
+};
 
 function AboutManager() {
   const navigate = useNavigate();
@@ -17,6 +45,7 @@ function AboutManager() {
   const [message, setMessage] = useState({ type: "", text: "" });
   const [newImage, setNewImage] = useState(null);
   const [featureInput, setFeatureInput] = useState("");
+  const [confirmRemoveImage, setConfirmRemoveImage] = useState(false);
 
   useEffect(() => {
     if (!token) { navigate("/admin/login"); return; }
@@ -27,7 +56,10 @@ function AboutManager() {
   const fetchContent = async () => {
     try {
       const { data } = await api.get("/about-content", authHeaders);
-      setContent(data.content || {});
+      setContent({
+        ...(data.content || {}),
+        features: normalizeFeatures(data.content?.features),
+      });
     } catch (err) {
       setMessage({ type: "error", text: "Failed to load about content." });
     } finally {
@@ -69,6 +101,30 @@ function AboutManager() {
     const features = [...(content.features || [])];
     features.splice(i, 1);
     setContent({ ...content, features });
+  };
+  const updateFeature = (i, value) => {
+    const features = [...(content.features || [])];
+    features[i] = value;
+    setContent({ ...content, features });
+  };
+
+  const handleRemoveImage = async () => {
+    setSaving(true);
+    try {
+      const fd = new FormData();
+      fd.append("removeImage", "true");
+      await api.put("/about-content", fd, {
+        ...authHeaders,
+        headers: { ...authHeaders.headers, "Content-Type": "multipart/form-data" },
+      });
+      setConfirmRemoveImage(false);
+      showMsg("success", "About image removed successfully!");
+      fetchContent();
+    } catch (err) {
+      showMsg("error", err.response?.data?.message || "Failed to remove image.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleSave = async (e) => {
@@ -117,6 +173,7 @@ function AboutManager() {
             📁 Choose New Image
             <input type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => setNewImage(e.target.files[0])} />
           </label>
+          {content.image && <button type="button" className="cm-btn cm-btn-danger-ghost" onClick={() => setConfirmRemoveImage(true)}>Remove Image</button>}
           {newImage && <span style={{ color: "#111", fontSize: 13 }}>Selected: {newImage.name}</span>}
         </div>
       </div>
@@ -167,7 +224,12 @@ function AboutManager() {
           </div>
           {(content.features || []).map((f, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
-              <span style={{ flex: 1, color: "#111" }}>✔ {f}</span>
+              <input
+                value={f}
+                onChange={(e) => updateFeature(i, e.target.value)}
+                aria-label={`Feature highlight ${i + 1}`}
+                style={{ flex: 1, padding: 11, border: "1px solid #d1d5db", borderRadius: 8 }}
+              />
               <button type="button" className="cm-icon-btn del" onClick={() => removeFeature(i)}>🗑️</button>
             </div>
           ))}
@@ -195,6 +257,7 @@ function AboutManager() {
           </button>
         </div>
       </form>
+      <ConfirmImageRemoval open={confirmRemoveImage} onCancel={() => setConfirmRemoveImage(false)} onConfirm={handleRemoveImage} busy={saving} />
     </div>
   );
 }

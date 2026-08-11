@@ -33,7 +33,49 @@ export const getActivityLogs = async (req, res) => {
       .limit(Math.min(Number(limit) || 200, 500))
       .lean();
 
-    res.json({ logs });
+    const adminId = String(req.user?._id || "");
+    const notifications = logs.map((log) => ({
+      ...log,
+      isRead: (log.readBy || []).some((id) => String(id) === adminId),
+    }));
+
+    res.json({ logs: notifications });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const markActivityRead = async (req, res) => {
+  try {
+    const log = await ActivityLog.findByIdAndUpdate(
+      req.params.id,
+      { $addToSet: { readBy: req.user._id } },
+      { new: true }
+    );
+    if (!log) return res.status(404).json({ message: "Activity not found." });
+    res.json({ message: "Notification marked as read." });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const markAllActivitiesRead = async (req, res) => {
+  try {
+    await ActivityLog.updateMany(
+      { readBy: { $ne: req.user._id } },
+      { $addToSet: { readBy: req.user._id } }
+    );
+    res.json({ message: "All notifications marked as read." });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const deleteActivityLog = async (req, res) => {
+  try {
+    const log = await ActivityLog.findByIdAndDelete(req.params.id);
+    if (!log) return res.status(404).json({ message: "Activity not found." });
+    res.json({ message: "Notification deleted." });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

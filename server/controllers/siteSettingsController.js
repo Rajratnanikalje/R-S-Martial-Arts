@@ -1,4 +1,5 @@
 import SiteSettings from "../models/SiteSettings.js";
+import { deleteUploadedFile } from "../config/contentUpload.js";
 import { logActivity } from "../utils/logActivity.js";
 
 const editableFields = [
@@ -49,13 +50,20 @@ export const updateSiteSettings = async (req, res) => {
     if (updates.mapEmbedUrl && !/^https:\/\//i.test(updates.mapEmbedUrl)) {
       return res.status(400).json({ message: "Map URL must start with https://" });
     }
-const settings = await SiteSettings.findOneAndUpdate({}, updates, { new: true, upsert: true, setDefaultsOnInsert: true });
+    const current = await SiteSettings.findOne();
+    const previousLogo = current?.logo || "";
+    const settings = await SiteSettings.findOneAndUpdate({}, updates, { new: true, upsert: true, setDefaultsOnInsert: true });
+    if (Object.hasOwn(updates, "logo") && previousLogo && previousLogo !== settings.logo) {
+      deleteUploadedFile("logo", previousLogo);
+    }
+    const logoChanged = Object.hasOwn(updates, "logo") && previousLogo !== settings.logo;
     logActivity({
       actor: req.user?.name || "admin",
       actorRole: req.user?.role || "admin",
-      action: "Website settings updated",
-      category: "settings",
+      action: logoChanged ? (settings.logo ? "Logo updated" : "Logo removed") : "Website settings updated",
+      category: logoChanged ? "cms" : "settings",
       entity: "SiteSettings",
+      detail: logoChanged ? (settings.logo ? "Logo was changed." : "Logo was removed.") : "",
     });
     res.json({ message: "Website settings updated successfully.", settings });
   } catch {

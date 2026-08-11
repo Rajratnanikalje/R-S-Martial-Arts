@@ -8,6 +8,9 @@ const activityLogSchema = new mongoose.Schema(
     category: { type: String, trim: true, default: "general" },
     detail: { type: String, trim: true, default: "" },
     entity: { type: String, trim: true, default: "" },
+    // Notification read state is per administrator and reuses the existing
+    // activity collection instead of creating a parallel notification store.
+    readBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );

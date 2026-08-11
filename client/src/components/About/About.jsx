@@ -24,12 +24,43 @@ const DEFAULT_ABOUT = {
   ],
 };
 
+const normalizeFeatures = (value) => {
+  const features = [];
+  const add = (item, splitPlainText = true) => {
+    if (Array.isArray(item)) return item.forEach((feature) => add(feature, false));
+    if (typeof item !== "string") return;
+
+    const text = item.trim();
+    if (!text) return;
+
+    try {
+      const parsed = JSON.parse(text);
+      if (Array.isArray(parsed)) return parsed.forEach((feature) => add(feature, false));
+      if (typeof parsed === "string" && parsed !== text) return add(parsed, splitPlainText);
+    } catch {
+      // Plain feature text is the normal case.
+    }
+
+    const values = splitPlainText ? text.split(/[\n,]/) : [text];
+    values.forEach((feature) => {
+      if (feature.trim()) features.push(feature.trim());
+    });
+  };
+
+  add(value);
+  return features;
+};
+
 function About() {
   const [about, setAbout] = useState(DEFAULT_ABOUT);
 
   useEffect(() => {
     api.get("/about-content")
-      .then(({ data }) => setAbout({ ...DEFAULT_ABOUT, ...(data.content || {}) }))
+      .then(({ data }) => setAbout({
+        ...DEFAULT_ABOUT,
+        ...(data.content || {}),
+        features: normalizeFeatures(data.content?.features),
+      }))
       .catch(() => {});
   }, []);
 
@@ -37,8 +68,9 @@ function About() {
     ? `${UPLOADS_BASE}/uploads/about/${about.image}`
     : `${UPLOADS_BASE}/uploads/about/about.png`;
 
-  const features = Array.isArray(about.features) && about.features.length
-    ? about.features
+  const normalizedFeatures = normalizeFeatures(about.features);
+  const features = normalizedFeatures.length
+    ? normalizedFeatures
     : DEFAULT_ABOUT.features;
 
   const stats = Array.isArray(about.stats) && about.stats.length

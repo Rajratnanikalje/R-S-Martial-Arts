@@ -1,5 +1,5 @@
 import Program from "../models/Program.js";
-import { deleteFile } from "../config/contentUpload.js";
+import { deleteFile, deleteUploadedFile } from "../config/contentUpload.js";
 import { logActivity } from "../utils/logActivity.js";
 
 // Default programs used only if DB is empty
@@ -93,10 +93,16 @@ const fields = ["title", "desc", "icon", "duration", "level", "benefits", "fees"
     // Publish/unpublish
     if (req.body.published !== undefined) program.published = String(req.body.published) === "true";
 
+    if (String(req.body.removeImage) === "true") {
+      const old = program.image;
+      program.image = "";
+      if (old) deleteUploadedFile("programs", old);
+    }
+
     if (req.file) {
       const old = program.image;
       program.image = req.file.filename;
-      if (old) deleteFile("programs", old);
+      if (old) deleteUploadedFile("programs", old);
     }
 
     await program.save();
@@ -120,7 +126,7 @@ export const deleteProgram = async (req, res) => {
     const { id } = req.params;
     const program = await Program.findById(id);
     if (!program) return res.status(404).json({ message: "Program not found" });
-    if (program.image) deleteFile("programs", program.image);
+    if (program.image) deleteUploadedFile("programs", program.image);
     await Program.findByIdAndDelete(id);
     res.json({ message: "Program deleted successfully." });
   } catch (error) {

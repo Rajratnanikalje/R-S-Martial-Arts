@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import ModalPortal from "../components/ModalPortal.jsx";
+import ConfirmImageRemoval from "../components/ConfirmImageRemoval.jsx";
 import "./ContentManagers.css";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
@@ -30,6 +31,7 @@ function ProgramsManager() {
   const [editing, setEditing] = useState(null);
   const [editForm, setEditForm] = useState(emptyForm);
   const [editImage, setEditImage] = useState(null);
+  const [removeProgramImage, setRemoveProgramImage] = useState(null);
 
   useEffect(() => {
     if (!editing) return;
@@ -131,6 +133,24 @@ function ProgramsManager() {
     }
   };
 
+  const handleRemoveProgramImage = async () => {
+    if (!removeProgramImage) return;
+    try {
+      const fd = new FormData();
+      fd.append("removeImage", "true");
+      const { data } = await api.put(`/programs/${removeProgramImage._id}`, fd, {
+        ...authHeaders,
+        headers: { ...authHeaders.headers, "Content-Type": "multipart/form-data" },
+      });
+      if (editing?._id === removeProgramImage._id) setEditing(data.program);
+      setRemoveProgramImage(null);
+      showMsg("success", `Image removed from ${data.program.title}.`);
+      fetchPrograms();
+    } catch (err) {
+      showMsg("error", err.response?.data?.message || "Failed to remove program image.");
+    }
+  };
+
   const move = async (idx, dir) => {
     const arr = [...programs];
     const target = idx + dir;
@@ -221,6 +241,7 @@ function ProgramsManager() {
                 <label className="cm-btn cm-btn-blue" style={{ cursor: "pointer" }}>📁 Change Image
                   <input type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => setEditImage(e.target.files[0])} />
                 </label>
+                {editing.image && <button type="button" className="cm-btn cm-btn-danger-ghost" onClick={() => setRemoveProgramImage(editing)}>Remove Image</button>}
                 {editImage && <span style={{ fontSize: 12 }}>{editImage.name}</span>}
               </div>
               <form onSubmit={handleUpdate}>
@@ -249,6 +270,7 @@ function ProgramsManager() {
           </div>
         </ModalPortal>
       )}
+      <ConfirmImageRemoval open={Boolean(removeProgramImage)} onCancel={() => setRemoveProgramImage(null)} onConfirm={handleRemoveProgramImage} />
     </div>
   );
 }

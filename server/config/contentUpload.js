@@ -6,6 +6,7 @@ import fs from "fs";
 export const DIRS = {
   hero: "uploads/hero",
   about: "uploads/about",
+  logo: "uploads/logo",
   programs: "uploads/programs",
   gallery: "uploads/gallery",
   trainers: "uploads/trainers",
@@ -52,6 +53,18 @@ export const deleteFile = (dirKey, filename) => {
 // Delete files from a directory (array)
 export const deleteFiles = (dirKey, filenames = []) => {
   filenames.forEach((f) => deleteFile(dirKey, f));
+};
+
+// CMS uploads are generated with a millisecond timestamp. Keep seeded/static
+// fallback assets intact even when an old CMS reference is replaced or cleared.
+export const deleteUploadedFile = (dirKey, filename) => {
+  if (/^\d{10,}-?\.[a-z0-9]+$/i.test(filename || "")) {
+    deleteFile(dirKey, filename);
+  }
+};
+
+export const deleteUploadedFiles = (dirKey, filenames = []) => {
+  filenames.forEach((filename) => deleteUploadedFile(dirKey, filename));
 };
 
 export default createUploader;

@@ -63,7 +63,10 @@ function Hero() {
     };
   }, [lightbox]);
 
-  const imgSrc = `${UPLOADS_BASE}/uploads/hero/hero.png`;
+  const activeImage = Array.isArray(hero.images) ? hero.images[0] : "";
+  const imgSrc = activeImage
+    ? `${UPLOADS_BASE}/uploads/hero/${activeImage}`
+    : `${UPLOADS_BASE}/uploads/hero/hero.png`;
 
   return (
     <section className="hero" id="home">
