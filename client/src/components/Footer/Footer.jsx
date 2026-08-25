@@ -145,7 +145,7 @@ function Footer() {
 
       {/* Bottom Bar: Copyright */}
       <div className="footer-bottom">
-        <p>&copy; {new Date().getFullYear()} RS MARTIAL ARTS SQUAD. All Rights Reserved.</p>
+        <p>&copy; {new Date().getFullYear()} Inner Strength Martial Arts & Fitness Academy.. All Rights Reserved.</p>
       </div>
     </footer>
   );

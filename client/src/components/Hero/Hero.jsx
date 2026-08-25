@@ -155,7 +155,7 @@ function Hero() {
             <img src={imgSrc} alt="Martial Arts Trainer - Fullscreen" />
           </div>
           <p className="hero-lightbox-caption">
-            RS MARTIAL—ARTS SQUAD — Train Your Body. Master Your Mind.
+            INNER STRENGTH MARTIAL ARTS ACADEMY — Train Your Body. Master Your Mind.
           </p>
         </div>
       )}
