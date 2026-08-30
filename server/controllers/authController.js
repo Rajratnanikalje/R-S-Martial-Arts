@@ -7,7 +7,7 @@ import { sendResetPasswordLink } from "../utils/sendEmail.js";
 // Signup (Optional / User Creation)
 export const signup = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
     const cleanEmail = email.trim().toLowerCase();
 
     const existingUser = await User.findOne({ email: cleanEmail });
@@ -24,7 +24,7 @@ export const signup = async (req, res) => {
       name,
       email: cleanEmail,
       password: hashedPassword,
-      role: role || "user",
+      role: "user",
     });
 
     res.status(201).json({

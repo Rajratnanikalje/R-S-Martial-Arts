@@ -9,14 +9,14 @@ import {
   FaEnvelope, 
   FaMapMarkerAlt 
 } from "react-icons/fa";
-import api from "../../services/api";
+import api, { getCachedSiteSettings } from "../../services/api";
 import "./Footer.css";
 
 // Server base URL for uploaded images
 const UPLOADS_BASE = (import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace(/\/api$/, "");
 
 function Footer() {
-  const [settings, setSettings] = useState({});
+  const [settings, setSettings] = useState(() => getCachedSiteSettings() || {});
 
   useEffect(() => {
     api.get("/site-settings")
@@ -24,12 +24,13 @@ function Footer() {
       .catch(() => {});
   }, []);
 
-  const academyName = settings.academyName || "RS MARTIAL ARTS SQUAD";
+  const academyName = settings.academyName || "";
   const whatsappNumber = (settings.whatsapp || "919156914227").replace(/\D/g, "") || "919156914227";
   const phone = settings.phone || "+91 91569 14227";
   const email = settings.email || "info@rsmartialarts.com";
   const mapUrl = settings.mapEmbedUrl?.trim();
   const address = settings.address || "RS Martial Arts Academy, Main Training Hall, City Center";
+  const copyrightText = settings.copyrightText || `© ${new Date().getFullYear()} Inner Strength Martial Arts & Fitness Academy. All Rights Reserved.`;
   const logoImg = (settings.logo)
     ? `${UPLOADS_BASE}/uploads/logo/${settings.logo}`
     : `${UPLOADS_BASE}/uploads/logo/logo.png`;
@@ -145,7 +146,7 @@ function Footer() {
 
       {/* Bottom Bar: Copyright */}
       <div className="footer-bottom">
-        <p>&copy; {new Date().getFullYear()} Inner Strength Martial Arts & Fitness Academy.. All Rights Reserved.</p>
+        <p>{copyrightText}</p>
       </div>
     </footer>
   );

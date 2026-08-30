@@ -44,8 +44,29 @@
 
 .program-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 28px;
+  max-height: 640px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-snap-type: y proximity;
+  padding-right: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(230, 57, 70, 0.8) rgba(255, 255, 255, 0.08);
+}
+
+.program-grid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.program-grid::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+}
+
+.program-grid::-webkit-scrollbar-thumb {
+  background: linear-gradient(#e63946, #ff5b6e);
+  border-radius: 999px;
 }
 
 .program-card {
@@ -60,6 +81,7 @@
   flex-direction: column;
   position: relative;
   overflow: hidden;
+  scroll-snap-align: start;
 }
 
 .program-card::after {
@@ -218,7 +240,7 @@
 /* Responsive Grid */
 @media (max-width: 900px) {
   .program-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .program-container h2 {
@@ -228,8 +250,15 @@
 
 @media (max-width: 600px) {
   .program-grid {
-    grid-template-columns: 1fr;
-    gap: 22px;
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(270px, 82vw);
+    max-height: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    gap: 18px;
+    padding: 0 4px 14px;
   }
 
   .program-container h2 {

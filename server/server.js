@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import dns from "dns";
 
 import authRoutes from "./routes/authRoutes.js";
 import contactRoutes from "./routes/contactRoutes.js";
@@ -25,6 +26,9 @@ import { getSiteSettings } from "./controllers/siteSettingsController.js";
 import connectDB from "./config/db.js";
 
 dotenv.config();
+
+// Fix MongoDB SRV DNS resolution on mobile hotspot networks
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
 const app = express();
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FaBars, FaTimes } from "react-icons/fa";
-import api from "../../services/api";
+import api, { getCachedSiteSettings } from "../../services/api";
 import "./Navbar.css";
 
 // Server base URL for uploaded images
@@ -9,8 +9,11 @@ const UPLOADS_BASE = (import.meta.env.VITE_API_URL || "http://localhost:5000/api
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [academyName, setAcademyName] = useState("RS MARTIAL ARTS SQUAD");
-  const [logoImg, setLogoImg] = useState(`${UPLOADS_BASE}/uploads/logo/logo.png`);
+  const [academyName, setAcademyName] = useState(() => getCachedSiteSettings()?.academyName || "");
+  const [logoImg, setLogoImg] = useState(() => {
+    const logo = getCachedSiteSettings()?.logo;
+    return logo ? `${UPLOADS_BASE}/uploads/logo/${logo}` : `${UPLOADS_BASE}/uploads/logo/logo.png`;
+  });
 
   useEffect(() => {
     api.get("/site-settings")

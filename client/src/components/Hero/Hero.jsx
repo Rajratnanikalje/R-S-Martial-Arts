@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../services/api";
+import api, { getCachedHeroContent } from "../../services/api";
 import "./Hero.css";
 
 // Server base URL for uploaded images
 const UPLOADS_BASE = (import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace(/\/api$/, "");
 
 const DEFAULT_HERO = {
-  tag: "RS MARTIAL—ARTS SQUAD & Fitness",
+  tag: "",
   title: "Train Your Body.\nMaster Your Mind.",
   subtitle: "Learn martial arts, improve fitness and build confidence with professional trainers.",
   button1Text: "Book Free Trial",
@@ -19,7 +19,7 @@ const DEFAULT_HERO = {
 function Hero() {
   const navigate = useNavigate();
   const [lightbox, setLightbox] = useState(false);
-  const [hero, setHero] = useState(DEFAULT_HERO);
+  const [hero, setHero] = useState(() => ({ ...DEFAULT_HERO, ...(getCachedHeroContent() || {}) }));
 
   const openLightbox = () => setLightbox(true);
   const closeLightbox = () => setLightbox(false);

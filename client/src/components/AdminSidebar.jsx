@@ -14,7 +14,7 @@ function AdminSidebar({ closeMenu }) {
 
   return (
     <div className="admin-sidebar-content">
-      <h2>RS MARTIAL ARTS SQUAD</h2>
+      <h2>Inner Strength Martial Arts & Fitness Academy.</h2>
 
       <ul>
         <li>
