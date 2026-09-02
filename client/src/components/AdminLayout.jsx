@@ -137,7 +137,7 @@ return (
         <button className="menu-btn" onClick={toggleSidebar} aria-label="Toggle Sidebar">
           ☰
         </button>
-        <div className="mobile-header-title">RS MARTIAL ARTS SQUAD DASHBOARD</div>
+        <div className="mobile-header-title">INNER STRENGTH DASHBOARD</div>
       </div>
 
       {/* 👤 Mobile Sidebar Backdrop Overlay */}
