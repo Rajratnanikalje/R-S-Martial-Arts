@@ -57,7 +57,7 @@ function TrainersManager() {
   };
 
   const photoUrl = (photo) =>
-    photo ? `${UPLOADS_BASE}/uploads/trainers/${photo}` : "";
+    photo ? (photo.startsWith("http") ? photo : `${UPLOADS_BASE}/uploads/trainers/${photo}`) : "";
 
   // ADD
   const handleAdd = async (e) => {

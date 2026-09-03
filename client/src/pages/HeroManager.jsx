@@ -119,7 +119,7 @@ function HeroManager() {
           {(content.images || []).length === 0 && <p style={{ color: "#888" }}>No hero images yet.</p>}
           {(content.images || []).map((img) => (
             <div className="cm-image-box" key={img}>
-              <img src={`${UPLOADS_BASE}/uploads/hero/${img}`} alt={img} />
+              <img src={img.startsWith("http") ? img : `${UPLOADS_BASE}/uploads/hero/${img}`} alt="Hero" />
               <button className="cm-remove-img" onClick={() => setImageToRemove(img)} title="Remove image">✕</button>
             </div>
           ))}

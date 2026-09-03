@@ -165,7 +165,7 @@ function AboutManager() {
         <p className="cm-hint">Replace the About section image.</p>
         <div style={{ display: "flex", gap: "16px", alignItems: "center", flexWrap: "wrap" }}>
           {content.image ? (
-            <img src={`${UPLOADS_BASE}/uploads/about/${content.image}`} alt="About" style={{ width: 160, height: 120, objectFit: "cover", borderRadius: 12, border: "1px solid #e5e7eb" }} />
+            <img src={content.image.startsWith("http") ? content.image : `${UPLOADS_BASE}/uploads/about/${content.image}`} alt="About" style={{ width: 160, height: 120, objectFit: "cover", borderRadius: 12, border: "1px solid #e5e7eb" }} />
           ) : (
             <div className="cm-thumb">📖</div>
           )}

@@ -65,7 +65,7 @@ function About() {
   }, []);
 
   const aboutImg = about.image
-    ? `${UPLOADS_BASE}/uploads/about/${about.image}`
+    ? (about.image.startsWith("http") ? about.image : `${UPLOADS_BASE}/uploads/about/${about.image}`)
     : `${UPLOADS_BASE}/uploads/about/about.png`;
 
   const normalizedFeatures = normalizeFeatures(about.features);

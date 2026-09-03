@@ -1,14 +1,19 @@
 import fs from "fs";
 import path from "path";
 import Trainer from "../models/Trainer.js";
+import { uploadToCloudinary } from "../config/cloudinary.js";
 
 const __dirname = path.resolve();
 const TRAINERS_DIR = path.join(__dirname, "uploads", "trainers");
 
-// Ensure trainers folder exists
+// Ensure trainers folder exists for legacy compatibility
 fs.mkdirSync(TRAINERS_DIR, { recursive: true });
 
-const publicUrl = (filename) => `/uploads/trainers/${filename}`;
+const publicUrl = (filename) => {
+  if (!filename) return "";
+  if (filename.startsWith("http")) return filename;
+  return `/uploads/trainers/${filename}`;
+};
 
 // 1. GET all trainers (public + admin)
 export const getTrainers = async (_req, res) => {
@@ -26,13 +31,15 @@ export const createTrainer = async (req, res) => {
     const { name, role, experience } = req.body;
 
     if (!name || !name.trim()) {
-      if (req.file) {
-        fs.unlinkSync(path.join(TRAINERS_DIR, req.file.filename));
-      }
       return res.status(400).json({ message: "Trainer name is required" });
     }
 
-    const photo = req.file ? req.file.filename : "";
+    let photo = "";
+    if (req.file) {
+      const uploadRes = await uploadToCloudinary(req.file.buffer, "trainers");
+      photo = uploadRes.secure_url;
+    }
+
     const order = await Trainer.countDocuments();
 
     const trainer = await Trainer.create({
@@ -48,9 +55,6 @@ export const createTrainer = async (req, res) => {
       trainer: { ...trainer.toObject(), photoUrl: photo ? publicUrl(photo) : "" },
     });
   } catch (error) {
-    if (req.file) {
-      fs.unlinkSync(path.join(TRAINERS_DIR, req.file.filename));
-    }
     res.status(500).json({ message: error.message });
   }
 };
@@ -63,7 +67,6 @@ export const updateTrainer = async (req, res) => {
 
     const trainer = await Trainer.findById(id);
     if (!trainer) {
-      if (req.file) fs.unlinkSync(path.join(TRAINERS_DIR, req.file.filename));
       return res.status(404).json({ message: "Trainer not found" });
     }
 
@@ -72,14 +75,15 @@ export const updateTrainer = async (req, res) => {
     if (experience !== undefined) trainer.experience = experience.trim();
     if (order !== undefined && Number.isFinite(Number(order))) trainer.order = Number(order);
 
-    // If a new photo is uploaded, replace old one
+    // If a new photo is uploaded, upload to Cloudinary and replace old reference
     if (req.file) {
       const oldPhoto = trainer.photo;
-      if (oldPhoto) {
+      if (oldPhoto && !oldPhoto.startsWith("http")) {
         const oldPath = path.join(TRAINERS_DIR, oldPhoto);
         if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
       }
-      trainer.photo = req.file.filename;
+      const uploadRes = await uploadToCloudinary(req.file.buffer, "trainers");
+      trainer.photo = uploadRes.secure_url;
     }
 
     await trainer.save();
@@ -89,7 +93,6 @@ export const updateTrainer = async (req, res) => {
       trainer: { ...trainer.toObject(), photoUrl: trainer.photo ? publicUrl(trainer.photo) : "" },
     });
   } catch (error) {
-    if (req.file) fs.unlinkSync(path.join(TRAINERS_DIR, req.file.filename));
     res.status(500).json({ message: error.message });
   }
 };
@@ -103,7 +106,7 @@ export const deleteTrainer = async (req, res) => {
       return res.status(404).json({ message: "Trainer not found" });
     }
 
-    if (trainer.photo) {
+    if (trainer.photo && !trainer.photo.startsWith("http")) {
       const photoPath = path.join(TRAINERS_DIR, trainer.photo);
       if (fs.existsSync(photoPath)) fs.unlinkSync(photoPath);
     }

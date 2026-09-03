@@ -1,7 +1,6 @@
 import express from "express";
 import multer from "multer";
 import path from "path";
-import fs from "fs";
 import {
   getTrainers,
   createTrainer,
@@ -12,16 +11,7 @@ import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Trainer photo upload config (trainers folder)
-const __dirname = path.resolve();
-const TRAINERS_DIR = path.join(__dirname, "uploads", "trainers");
-fs.mkdirSync(TRAINERS_DIR, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, TRAINERS_DIR),
-  filename: (_req, file, cb) =>
-    cb(null, Date.now() + path.extname(file.originalname)),
-});
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage,

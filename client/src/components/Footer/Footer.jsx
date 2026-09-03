@@ -32,7 +32,7 @@ function Footer() {
   const address = settings.address || "RS Martial Arts Academy, Main Training Hall, City Center";
   const copyrightText = settings.copyrightText || `© ${new Date().getFullYear()} Inner Strength Martial Arts & Fitness Academy. All Rights Reserved.`;
   const logoImg = (settings.logo)
-    ? `${UPLOADS_BASE}/uploads/logo/${settings.logo}`
+    ? (settings.logo.startsWith("http") ? settings.logo : `${UPLOADS_BASE}/uploads/logo/${settings.logo}`)
     : `${UPLOADS_BASE}/uploads/logo/logo.png`;
 
   const scrollToTop = () => {

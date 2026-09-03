@@ -1,5 +1,6 @@
 import Testimonial from "../models/Testimonial.js";
 import { deleteFiles } from "../config/contentUpload.js";
+import { uploadToCloudinary } from "../config/cloudinary.js";
 import { logActivity } from "../utils/logActivity.js";
 
 export const DEFAULT_TESTIMONIALS = [
@@ -28,8 +29,13 @@ export const createTestimonial = async (req, res) => {
     if (!name || !name.trim()) {
       return res.status(400).json({ message: "Name is required" });
     }
-    // If a photo file was uploaded via multer, use its stored filename
-    const photoFilename = req.file ? req.file.filename : (photo || "").trim();
+
+    let photoFilename = (photo || "").trim();
+    if (req.file) {
+      const uploadRes = await uploadToCloudinary(req.file.buffer, "testimonials");
+      photoFilename = uploadRes.secure_url;
+    }
+
     const count = await Testimonial.countDocuments();
     const testimonial = await Testimonial.create({
       name: name.trim(),
@@ -64,11 +70,13 @@ export const updateTestimonial = async (req, res) => {
     if (typeof req.body.program === "string") testimonial.program = req.body.program.trim();
     if (typeof req.body.review === "string") testimonial.review = req.body.review.trim();
     if (req.body.rating !== undefined) testimonial.rating = Math.min(5, Math.max(1, Number(req.body.rating) || 5));
-if (typeof req.body.photo === "string") testimonial.photo = req.body.photo.trim();
-    // If a new photo file was uploaded via multer, replace the old one
+    if (typeof req.body.photo === "string") testimonial.photo = req.body.photo.trim();
+
+    // If a new photo file was uploaded via multer, upload to Cloudinary and replace old one
     if (req.file) {
       const oldPhoto = testimonial.photo;
-      testimonial.photo = req.file.filename;
+      const uploadRes = await uploadToCloudinary(req.file.buffer, "testimonials");
+      testimonial.photo = uploadRes.secure_url;
       if (oldPhoto) deleteFiles("testimonials", [oldPhoto]);
     }
     if (req.body.published !== undefined) testimonial.published = String(req.body.published) === "true";

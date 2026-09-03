@@ -64,7 +64,7 @@ function ProgramsManager() {
     setTimeout(() => setMessage({ type: "", text: "" }), 4000);
   };
 
-  const imgUrl = (name) => (name ? `${UPLOADS_BASE}/uploads/programs/${name}` : "");
+  const imgUrl = (name) => (name ? (name.startsWith("http") ? name : `${UPLOADS_BASE}/uploads/programs/${name}`) : "");
 
   const handleAdd = async (e) => {
     e.preventDefault();

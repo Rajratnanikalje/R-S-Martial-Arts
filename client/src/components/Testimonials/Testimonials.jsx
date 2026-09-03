@@ -25,7 +25,7 @@ function Testimonials() {
         program: item.program || "Student",
         rating: Number(item.rating) || 5,
         review: item.review || "",
-        photo: item.photo ? `${uploadsBase}/uploads/testimonials/${item.photo}` : "",
+        photo: item.photo ? (item.photo.startsWith("http") ? item.photo : `${uploadsBase}/uploads/testimonials/${item.photo}`) : "",
       }));
       setReviews(mapped);
     } catch (err) {

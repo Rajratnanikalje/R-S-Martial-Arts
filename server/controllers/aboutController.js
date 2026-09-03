@@ -1,5 +1,6 @@
 import AboutContent from "../models/AboutContent.js";
 import { deleteUploadedFile } from "../config/contentUpload.js";
+import { uploadToCloudinary } from "../config/cloudinary.js";
 import { logActivity } from "../utils/logActivity.js";
 
 const DEFAULT_FEATURES = [
@@ -84,7 +85,7 @@ export const updateAboutContent = async (req, res) => {
     let content = await AboutContent.findOne();
     if (!content) content = new AboutContent();
 
-const textFields = [
+    const textFields = [
       "headingTop",
       "headingBottom",
       "paragraph1",
@@ -126,7 +127,8 @@ const textFields = [
     // Optional photo replace
     if (req.file) {
       const old = content.image;
-      content.image = req.file.filename;
+      const uploadRes = await uploadToCloudinary(req.file.buffer, "about");
+      content.image = uploadRes.secure_url;
       if (old) deleteUploadedFile("about", old);
     }
 

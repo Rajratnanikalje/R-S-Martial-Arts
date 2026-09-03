@@ -10,17 +10,18 @@ const UPLOADS_BASE = (import.meta.env.VITE_API_URL || "http://localhost:5000/api
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [academyName, setAcademyName] = useState(() => getCachedSiteSettings()?.academyName || "");
-  const [logoImg, setLogoImg] = useState(() => {
-    const logo = getCachedSiteSettings()?.logo;
-    return logo ? `${UPLOADS_BASE}/uploads/logo/${logo}` : `${UPLOADS_BASE}/uploads/logo/logo.png`;
-  });
+  const resolveLogo = (logo) => {
+    if (!logo) return `${UPLOADS_BASE}/uploads/logo/logo.png`;
+    return logo.startsWith("http") ? logo : `${UPLOADS_BASE}/uploads/logo/${logo}`;
+  };
+  const [logoImg, setLogoImg] = useState(() => resolveLogo(getCachedSiteSettings()?.logo));
 
   useEffect(() => {
     api.get("/site-settings")
       .then(({ data }) => {
         const s = data.settings || {};
         if (s.academyName) setAcademyName(s.academyName);
-        if (s.logo) setLogoImg(`${UPLOADS_BASE}/uploads/logo/${s.logo}`);
+        if (s.logo) setLogoImg(resolveLogo(s.logo));
       })
       .catch(() => {});
   }, []);

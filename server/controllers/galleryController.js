@@ -1,5 +1,6 @@
 import GallerySection from "../models/GallerySection.js";
 import { deleteFiles } from "../config/contentUpload.js";
+import { uploadToCloudinary } from "../config/cloudinary.js";
 
 // GET galleries (public) — one section = one document.
 // Sections are only ever created explicitly via the "Add Section" action.
@@ -22,16 +23,24 @@ export const createGallery = async (req, res) => {
     }
     const count = await GallerySection.countDocuments();
     const files = req.files || [];
+    let imageUrls = [];
+
+    if (files.length) {
+      const uploadResults = await Promise.all(
+        files.map((file) => uploadToCloudinary(file.buffer, "gallery"))
+      );
+      imageUrls = uploadResults.map((r) => r.secure_url);
+    }
+
     const section = await GallerySection.create({
       title: title.trim(),
       icon: (icon || "📸").trim(),
       description: (description || "").trim(),
-      images: files.map((f) => f.filename),
+      images: imageUrls,
       order: count,
     });
     res.status(201).json({ message: "Gallery section created.", section });
   } catch (error) {
-    if (req.files) deleteFiles("gallery", req.files.map((f) => f.filename));
     res.status(500).json({ message: error.message });
   }
 };
@@ -42,7 +51,6 @@ export const updateGallery = async (req, res) => {
     const { id } = req.params;
     const section = await GallerySection.findById(id);
     if (!section) {
-      if (req.files) deleteFiles("gallery", req.files.map((f) => f.filename));
       return res.status(404).json({ message: "Section not found" });
     }
 
@@ -51,15 +59,18 @@ export const updateGallery = async (req, res) => {
     if (typeof req.body.description === "string") section.description = req.body.description.trim();
     if (req.body.order !== undefined) section.order = Number(req.body.order);
 
-    // Append new uploaded images
+    // Append new uploaded images via Cloudinary
     if (req.files && req.files.length) {
-      section.images = [...(section.images || []), ...req.files.map((f) => f.filename)];
+      const uploadResults = await Promise.all(
+        req.files.map((file) => uploadToCloudinary(file.buffer, "gallery"))
+      );
+      const newUrls = uploadResults.map((r) => r.secure_url);
+      section.images = [...(section.images || []), ...newUrls];
     }
 
     await section.save();
     res.json({ message: "Gallery section updated.", section });
   } catch (error) {
-    if (req.files) deleteFiles("gallery", req.files.map((f) => f.filename));
     res.status(500).json({ message: error.message });
   }
 };
@@ -82,15 +93,16 @@ export const deleteGallery = async (req, res) => {
 export const deleteGalleryImage = async (req, res) => {
   try {
     const { id, filename } = req.params;
-    if (!/^[\w.-]+$/.test(filename)) {
+    if (!filename) {
       return res.status(400).json({ message: "Invalid filename" });
     }
+    const decoded = decodeURIComponent(filename);
     const section = await GallerySection.findById(id);
     if (!section) return res.status(404).json({ message: "Section not found" });
 
-    section.images = (section.images || []).filter((i) => i !== filename);
+    section.images = (section.images || []).filter((i) => i !== filename && i !== decoded);
     await section.save();
-    deleteFiles("gallery", [filename]);
+    deleteFiles("gallery", [decoded]);
     res.json({ message: "Image deleted.", section });
   } catch (error) {
     res.status(500).json({ message: error.message });

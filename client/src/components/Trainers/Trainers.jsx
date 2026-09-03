@@ -20,7 +20,7 @@ function Trainers() {
     fetchTrainers();
   }, []);
 
-  const photoUrl = (photo) => (photo ? `${UPLOADS_BASE}/uploads/trainers/${photo}` : "");
+  const photoUrl = (photo) => (photo ? (photo.startsWith("http") ? photo : `${UPLOADS_BASE}/uploads/trainers/${photo}`) : "");
 
   return (
     <section className="trainers" id="trainers">

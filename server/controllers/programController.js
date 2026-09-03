@@ -1,5 +1,6 @@
 import Program from "../models/Program.js";
 import { deleteFile, deleteUploadedFile } from "../config/contentUpload.js";
+import { uploadToCloudinary } from "../config/cloudinary.js";
 import { logActivity } from "../utils/logActivity.js";
 
 // Default programs used only if DB is empty
@@ -40,9 +41,15 @@ export const createProgram = async (req, res) => {
   try {
     const { title, desc, icon, duration, level, benefits, fees, ageGroup, beltLevel, trainer, published } = req.body;
     if (!title || !title.trim()) {
-      if (req.file) deleteFile("programs", req.file.filename);
       return res.status(400).json({ message: "Program title is required" });
     }
+
+    let imageUrl = "";
+    if (req.file) {
+      const uploadRes = await uploadToCloudinary(req.file.buffer, "programs");
+      imageUrl = uploadRes.secure_url;
+    }
+
     const count = await Program.countDocuments();
     const program = await Program.create({
       title: title.trim(),
@@ -56,9 +63,10 @@ export const createProgram = async (req, res) => {
       beltLevel: (beltLevel || "").trim(),
       trainer: (trainer || "").trim(),
       published: published !== undefined ? String(published) === "true" : true,
-      image: req.file ? req.file.filename : "",
+      image: imageUrl,
       order: count,
     });
+
     logActivity({
       actor: req.user?.name || "admin",
       actorRole: req.user?.role || "admin",
@@ -68,7 +76,6 @@ export const createProgram = async (req, res) => {
     });
     res.status(201).json({ message: "Program created successfully.", program });
   } catch (error) {
-    if (req.file) deleteFile("programs", req.file.filename);
     res.status(500).json({ message: error.message });
   }
 };
@@ -79,11 +86,10 @@ export const updateProgram = async (req, res) => {
     const { id } = req.params;
     const program = await Program.findById(id);
     if (!program) {
-      if (req.file) deleteFile("programs", req.file.filename);
       return res.status(404).json({ message: "Program not found" });
     }
 
-const fields = ["title", "desc", "icon", "duration", "level", "benefits", "fees", "ageGroup", "beltLevel", "trainer"];
+    const fields = ["title", "desc", "icon", "duration", "level", "benefits", "fees", "ageGroup", "beltLevel", "trainer"];
     fields.forEach((f) => {
       if (typeof req.body[f] === "string") program[f] = req.body[f].trim();
     });
@@ -101,7 +107,8 @@ const fields = ["title", "desc", "icon", "duration", "level", "benefits", "fees"
 
     if (req.file) {
       const old = program.image;
-      program.image = req.file.filename;
+      const uploadRes = await uploadToCloudinary(req.file.buffer, "programs");
+      program.image = uploadRes.secure_url;
       if (old) deleteUploadedFile("programs", old);
     }
 
@@ -115,7 +122,6 @@ const fields = ["title", "desc", "icon", "duration", "level", "benefits", "fees"
     });
     res.json({ message: "Program updated successfully.", program });
   } catch (error) {
-    if (req.file) deleteFile("programs", req.file.filename);
     res.status(500).json({ message: error.message });
   }
 };

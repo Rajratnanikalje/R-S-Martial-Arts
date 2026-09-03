@@ -1,5 +1,6 @@
 import HeroContent from "../models/HeroContent.js";
 import { deleteUploadedFiles } from "../config/contentUpload.js";
+import { uploadToCloudinary } from "../config/cloudinary.js";
 import { logActivity } from "../utils/logActivity.js";
 
 // GET hero content (public)
@@ -30,7 +31,7 @@ export const updateHeroContent = async (req, res) => {
       "button2Text",
       "button2Link",
     ];
-fields.forEach((f) => {
+    fields.forEach((f) => {
       if (typeof req.body[f] === "string") content[f] = req.body[f].trim();
     });
 
@@ -54,7 +55,7 @@ fields.forEach((f) => {
 // UPLOAD images to hero (admin)
 export const uploadHeroImages = async (req, res) => {
   try {
-    const files = req.files || [];
+    const files = req.files || (req.file ? [req.file] : []);
     if (files.length === 0) {
       return res.status(400).json({ message: "No images uploaded" });
     }
@@ -62,10 +63,14 @@ export const uploadHeroImages = async (req, res) => {
     if (!content) content = new HeroContent();
 
     const oldImages = content.images || [];
-    const names = files.map((f) => f.filename);
-    // The public Hero has one active image. Replacing it also cleans up the
-    // previous CMS uploads instead of accumulating stale files.
-    content.images = names;
+    const uploadResults = await Promise.all(
+      files.map((file) => uploadToCloudinary(file.buffer, "hero"))
+    );
+    const urls = uploadResults.map((r) => r.secure_url);
+
+    // The public Hero has one active image. Replacing it saves the Cloudinary URL
+    // and cleans up previous legacy local uploads.
+    content.images = urls;
     await content.save();
     deleteUploadedFiles("hero", oldImages);
     logActivity({
@@ -87,16 +92,17 @@ export const uploadHeroImages = async (req, res) => {
 export const deleteHeroImage = async (req, res) => {
   try {
     const { filename } = req.params;
-    if (!/^[\w.-]+$/.test(filename)) {
+    if (!filename) {
       return res.status(400).json({ message: "Invalid filename" });
     }
+    const decoded = decodeURIComponent(filename);
     let content = await HeroContent.findOne();
     if (!content) return res.status(404).json({ message: "No hero content" });
 
-    content.images = (content.images || []).filter((i) => i !== filename);
+    content.images = (content.images || []).filter((i) => i !== filename && i !== decoded);
     await content.save();
 
-    deleteUploadedFiles("hero", [filename]);
+    deleteUploadedFiles("hero", [decoded]);
     logActivity({
       actor: req.user?.name || "admin",
       actorRole: req.user?.role || "admin",

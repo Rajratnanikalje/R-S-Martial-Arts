@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { CATEGORIES } from "../config/multer.js";
+import { uploadToCloudinary } from "../config/cloudinary.js";
 
 const __dirname = path.resolve();
 
@@ -9,12 +10,14 @@ const resolveCategory = (category) => {
   return CATEGORIES[category] || CATEGORIES.gallery;
 };
 
-// Helper to build public URL
+// Helper to build public URL for legacy files
 const publicUrl = (category, filename) => {
+  if (!filename) return "";
+  if (filename.startsWith("http")) return filename;
   return `/uploads/${category}/${filename}`;
 };
 
-// 1. GET all images grouped by category
+// 1. GET all images grouped by category (reads legacy local folder)
 export const getImages = async (req, res) => {
   try {
     const result = {};
@@ -43,22 +46,25 @@ export const getImages = async (req, res) => {
   }
 };
 
-// 2. UPLOAD images to a category (single or multiple)
+// 2. UPLOAD images to a category (single or multiple) via Cloudinary
 export const uploadImages = async (req, res) => {
   try {
     const category = req.params.category || req.body.category || "gallery";
-    const dir = resolveCategory(category);
-
     const files = req.files || (req.file ? [req.file] : []);
 
     if (files.length === 0) {
       return res.status(400).json({ message: "No images uploaded" });
     }
 
-    const uploaded = files.map((file) => ({
-      name: file.filename,
-      url: publicUrl(category, file.filename),
-      path: path.join(dir, file.filename),
+    const uploadPromises = files.map((file) =>
+      uploadToCloudinary(file.buffer, category)
+    );
+    const uploadResults = await Promise.all(uploadPromises);
+
+    const uploaded = uploadResults.map((result) => ({
+      name: result.secure_url,
+      url: result.secure_url,
+      public_id: result.public_id,
     }));
 
     res.status(201).json({ message: "Images uploaded", images: uploaded });
@@ -71,27 +77,23 @@ export const uploadImages = async (req, res) => {
 export const deleteImage = async (req, res) => {
   try {
     const { category, filename } = req.params;
-    const dir = resolveCategory(category);
+    const decoded = decodeURIComponent(filename);
 
-    // Prevent path traversal
-    if (!/^[\w.-]+$/.test(filename)) {
-      return res.status(400).json({ message: "Invalid filename" });
+    if (!decoded.startsWith("http")) {
+      const dir = resolveCategory(category);
+      const filePath = path.join(dir, decoded);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
     }
 
-    const filePath = path.join(dir, filename);
-
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ message: "Image not found" });
-    }
-
-    fs.unlinkSync(filePath);
-    res.json({ message: "Image deleted", filename });
+    res.json({ message: "Image deleted", filename: decoded });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// 4. RENAME an image in a category
+// 4. RENAME an image in a category (legacy local support)
 export const renameImage = async (req, res) => {
   try {
     const { category, filename } = req.params;

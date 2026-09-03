@@ -65,7 +65,7 @@ function Hero() {
 
   const activeImage = Array.isArray(hero.images) ? hero.images[0] : "";
   const imgSrc = activeImage
-    ? `${UPLOADS_BASE}/uploads/hero/${activeImage}`
+    ? (activeImage.startsWith("http") ? activeImage : `${UPLOADS_BASE}/uploads/hero/${activeImage}`)
     : `${UPLOADS_BASE}/uploads/hero/hero.png`;
 
   return (

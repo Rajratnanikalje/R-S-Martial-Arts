@@ -33,7 +33,7 @@ const [saving, setSaving] = useState(false);
     };
   }, [editing]);
 
-  const imgUrl = (name) => (name ? `${UPLOADS_BASE}/uploads/testimonials/${name}` : "");
+  const imgUrl = (name) => (name ? (name.startsWith("http") ? name : `${UPLOADS_BASE}/uploads/testimonials/${name}`) : "");
 
   useEffect(() => {
     if (!token) { navigate("/admin/login"); return; }

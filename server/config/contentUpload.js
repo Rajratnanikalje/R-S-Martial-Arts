@@ -2,7 +2,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 
-// Upload directories for content managers
+// Upload directories for content managers (used for legacy local files)
 export const DIRS = {
   hero: "uploads/hero",
   about: "uploads/about",
@@ -13,19 +13,14 @@ export const DIRS = {
   testimonials: "uploads/testimonials",
 };
 
-// Ensure directories exist
+// Ensure directories exist for legacy compatibility
 Object.values(DIRS).forEach((dir) => {
   fs.mkdirSync(dir, { recursive: true });
 });
 
-// Factory: creates a multer middleware for a given directory
-export const createUploader = (dirKey, field = "image", multiple = false) => {
-  const dest = DIRS[dirKey] || DIRS.gallery;
-
-  const storage = multer.diskStorage({
-    destination: (_req, _file, cb) => cb(null, dest),
-    filename: (_req, file, cb) => cb(null, Date.now() + "-" + path.extname(file.originalname)),
-  });
+// Factory: creates a memory-based multer middleware for direct streaming
+export const createUploader = (_dirKey, field = "image", multiple = false) => {
+  const storage = multer.memoryStorage();
 
   const upload = multer({
     storage,
@@ -42,9 +37,9 @@ export const createUploader = (dirKey, field = "image", multiple = false) => {
   return upload.single(field);
 };
 
-// Delete a file from a directory safely
+// Delete a file from a directory safely (skips remote URLs)
 export const deleteFile = (dirKey, filename) => {
-  if (!filename) return;
+  if (!filename || filename.startsWith("http")) return;
   const dest = DIRS[dirKey] || DIRS.gallery;
   const p = path.join(dest, filename);
   if (fs.existsSync(p)) fs.unlinkSync(p);
@@ -58,6 +53,7 @@ export const deleteFiles = (dirKey, filenames = []) => {
 // CMS uploads are generated with a millisecond timestamp. Keep seeded/static
 // fallback assets intact even when an old CMS reference is replaced or cleared.
 export const deleteUploadedFile = (dirKey, filename) => {
+  if (!filename || filename.startsWith("http")) return;
   if (/^\d{10,}-?\.[a-z0-9]+$/i.test(filename || "")) {
     deleteFile(dirKey, filename);
   }
@@ -68,4 +64,3 @@ export const deleteUploadedFiles = (dirKey, filenames = []) => {
 };
 
 export default createUploader;
-

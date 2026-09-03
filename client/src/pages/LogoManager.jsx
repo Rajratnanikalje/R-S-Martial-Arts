@@ -31,7 +31,7 @@ function LogoManager() {
         const s = data.settings || {};
         setAcademyName(s.academyName || "RS MARTIAL ARTS SQUAD");
         if (s.logo) {
-          setLogoUrl(`${UPLOADS_BASE}/uploads/logo/${s.logo}`);
+          setLogoUrl(s.logo.startsWith("http") ? s.logo : `${UPLOADS_BASE}/uploads/logo/${s.logo}`);
         }
       } catch (err) {
         setMessage({ type: "error", text: "Failed to load branding settings." });
@@ -80,7 +80,7 @@ function LogoManager() {
           authHeaders
         );
         const s = sRes.data.settings || {};
-        if (s.logo) setLogoUrl(`${UPLOADS_BASE}/uploads/logo/${s.logo}`);
+        if (s.logo) setLogoUrl(s.logo.startsWith("http") ? s.logo : `${UPLOADS_BASE}/uploads/logo/${s.logo}`);
       }
 
       showMsg("success", "Logo uploaded successfully!");
